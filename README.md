@@ -5,7 +5,7 @@
 <h3 align="center">An MCP server for finding Roblox Creator Store assets.<br>Give an assistant a way to search, inspect, and retrieve what a game needs.</h3>
 
 <p align="center">
-  <a href="https://pypi.org/project/roblox-assets-mcp/"><img alt="PyPI version" src="https://img.shields.io/pypi/v/roblox-assets-mcp?logo=pypi&logoColor=white" /></a> <a href="https://github.com/Petri-Hub/roblox-assets-mcp/actions/workflows/quality.yml"><img alt="Quality" src="https://github.com/Petri-Hub/roblox-assets-mcp/actions/workflows/quality.yml/badge.svg?branch=main" /></a> <a href="https://github.com/Petri-Hub/roblox-assets-mcp/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/Petri-Hub/roblox-assets-mcp?style=social" /></a> <img alt="Python 3.12+" src="https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white" /> <a href="LICENSE.md"><img alt="License" src="https://img.shields.io/github/license/Petri-Hub/roblox-assets-mcp" /></a> <img alt="Time spent" src="https://img.shields.io/endpoint?url=https%3A%2F%2Flab-wakapi.petri.zip%2Fapi%2Fcompat%2Fshields%2Fv1%2FPetri%2Fproject%3Aroblox-assets-mcp%2Finterval%3Aall_time&label=time%20spent&logo=wakatime&logoColor=white&color=blue&cacheSeconds=3600" />
+  <a href="https://pypi.org/project/roblox-assets-mcp/"><img alt="PyPI version" src="https://img.shields.io/pypi/v/roblox-assets-mcp?logo=pypi&logoColor=white" /></a> <a href="https://github.com/Petri-Hub/roblox-assets-mcp/actions/workflows/quality.yml"><img alt="Quality" src="https://github.com/Petri-Hub/roblox-assets-mcp/actions/workflows/quality.yml/badge.svg?branch=main" /></a> <img alt="Python 3.12+" src="https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white" /> <a href="LICENSE.md"><img alt="License" src="https://img.shields.io/github/license/Petri-Hub/roblox-assets-mcp" /></a> <img alt="Time spent" src="https://img.shields.io/endpoint?url=https%3A%2F%2Flab-wakapi.petri.zip%2Fapi%2Fcompat%2Fshields%2Fv1%2FPetri%2Fproject%3Aroblox-assets-mcp%2Finterval%3Aall_time&label=time%20spent&logo=wakatime&logoColor=white&color=blue&cacheSeconds=3600" />
 </p>
 
 <br>
@@ -346,15 +346,23 @@ The server obtains the CDN location; the assistant decides where to fetch, inspe
 ## What's inside
 
 ```text
-├── assets/                  Editable Excalidraw flow and its SVG for this README
+.
+├── .github/
+│   └── workflows/
+│       ├── quality.yml        # formatting, lint, tests and build checks
+│       └── release.yml        # build and publish a GitHub Release to PyPI
+│
+├── assets/                  # editable Excalidraw flow and its SVG for this README
+│
 ├── src/roblox_assets_mcp/
-│   ├── app.py               Stdio server, tools and startup check
-│   ├── client.py            Roblox HTTP requests and response parsing
-│   ├── config.py            Environment settings and their defaults
-│   └── models.py            Typed tool responses and asset categories
-├── tests/                   Behavior checks for the server
-├── Makefile                 Local quality commands
-└── pyproject.toml           Package metadata and dependencies
+│   ├── app.py               # stdio server, tools and startup check
+│   ├── client.py            # Roblox HTTP requests and response parsing
+│   ├── config.py            # environment settings and their defaults
+│   └── models.py            # typed tool responses and asset categories
+│
+├── tests/                   # behavior checks for the server
+├── Makefile                 # local quality commands
+└── pyproject.toml           # package metadata and dependencies
 ```
 
 ## Technologies
@@ -368,17 +376,83 @@ The server obtains the CDN location; the assistant decides where to fetch, inspe
 | <img src="https://cdn.simpleicons.org/pydantic" width="20" height="20" alt="" /> | [Pydantic](https://docs.pydantic.dev/) | Models for the data returned by tools |
 | <img src="https://cdn.simpleicons.org/uv" width="20" height="20" alt="" /> | [uv](https://docs.astral.sh/uv/) | Dependencies, development and `uvx` distribution |
 
-## Development and release
+## Development
 
-After `uv sync`, run `make quality` to check formatting, lint, tests and a package build. `make format-apply` formats the code. The [quality workflow](.github/workflows/quality.yml) uses the same Makefile targets for pull requests and pushes to `main`.
+### Requirements
 
-To publish a new version, update `pyproject.toml` and publish a GitHub Release tagged with that version. The [release workflow](.github/workflows/release.yml) checks the tag, builds the package and publishes it to PyPI through GitHub OIDC and the `PyPI - Production` environment. The PyPI page receives README changes when a new version is published.
+- [Git](https://git-scm.com/install/) to work with the repository.
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) to install Python and project dependencies.
+- [GNU Make](https://www.gnu.org/software/make/) to run the project commands.
+
+### Setup
+
+From the repository root:
+
+```bash
+# Install the dependencies pinned in uv.lock.
+uv sync --locked --group dev
+```
+
+### Coding
+
+```bash
+# Format the Python files after editing them.
+make format-apply
+
+# Check formatting and lint separately when needed.
+make format-check
+make lint
+```
+
+### Testing and building
+
+```bash
+# Run the server tests.
+make test
+
+# Build the source distribution and wheel in dist/.
+make build
+
+# Run formatting, lint, tests and build together.
+make quality
+```
+
+The [quality workflow](.github/workflows/quality.yml) runs the same checks for pull requests and pushes to `main`.
+
+## Release
+
+With the release changes ready on `main` and the [GitHub CLI](https://cli.github.com/) authenticated, bump the package version and publish a GitHub Release:
+
+```bash
+# Update pyproject.toml and uv.lock to the next patch version.
+uv version --bump patch
+
+# Check the version that will be published.
+make quality
+
+# Commit and push the version change.
+git add pyproject.toml uv.lock
+git commit -m "chore(release): bump package version"
+git push origin main
+
+# Publish a GitHub Release with a tag matching the package version.
+gh release create "v$(uv version --short)" --generate-notes
+```
+
+Use `--bump minor` or `--bump major` when the change calls for it. The [release workflow](.github/workflows/release.yml) checks the tag, builds the package and publishes it to PyPI through GitHub OIDC and the `PyPI - Production` environment. The PyPI page receives README changes with a new package version.
 
 ## Related projects
 
 - [roblox-with-swe](https://github.com/Petri-Hub/roblox-with-swe) is the collaborative Roblox game that motivated this server.
 - [pepper](https://github.com/Petri-Hub/pepper) documents the personal agent that will use it.
-- [fam-mcp](https://github.com/Petri-Hub/fam-mcp) is another local MCP server and the model for this project's packaging and release flow.
+
+## Disclaimer
+
+This project is unofficial. It is not made by, affiliated with or endorsed by Roblox.
+
+## License
+
+This repository is licensed under the [MIT License](LICENSE.md).
 
 ## References
 
@@ -387,11 +461,3 @@ To publish a new version, update `pyproject.toml` and publish a GitHub Release t
 - [Roblox Thumbnails API](https://create.roblox.com/docs/cloud/reference/features/thumbnails): 2D previews.
 - [Roblox Open Cloud scopes](https://create.roblox.com/docs/cloud/reference/scopes): the permissions used by the API key.
 - [Model Context Protocol](https://modelcontextprotocol.io): the tool protocol this server speaks.
-
-## Disclaimer
-
-This project is unofficial. It is not made by, affiliated with or endorsed by Roblox.
-
-## License
-
-MIT, in [LICENSE.md](LICENSE.md).
