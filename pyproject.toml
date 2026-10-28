@@ -18,7 +18,7 @@ Repository = "https://github.com/Petri-Hub/roblox-assets-mcp"
 Issues = "https://github.com/Petri-Hub/roblox-assets-mcp/issues"
 
 [project.scripts]
-roblox-assets-mcp = "roblox_assets_mcp.server:main"
+roblox-assets-mcp = "roblox_assets_mcp.app:main"
 
 [dependency-groups]
 dev = [

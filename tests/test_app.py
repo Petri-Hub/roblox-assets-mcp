@@ -10,8 +10,8 @@ import pytest
 from fastmcp import Client
 from fastmcp.exceptions import ToolError
 
+from roblox_assets_mcp.app import create_server
 from roblox_assets_mcp.client import RobloxClient
-from roblox_assets_mcp.server import create_server
 
 ASSET_ID = 123456
 ASSET = {
@@ -35,7 +35,7 @@ ASSET = {
 def test_missing_key_fails_before_stdio_starts(tmp_path: Path) -> None:
     environment = {key: value for key, value in os.environ.items() if key != "ROBLOX_API_KEY"}
     result = subprocess.run(
-        [sys.executable, "-m", "roblox_assets_mcp.server"],
+        [sys.executable, "-m", "roblox_assets_mcp.app"],
         env=environment,
         cwd=tmp_path,
         capture_output=True,

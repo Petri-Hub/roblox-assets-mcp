@@ -22,7 +22,7 @@ An assistant building a Roblox experience needs to discover reusable models, aud
 
 The server uses [FastMCP](https://gofastmcp.com/) over stdio and [HTTPX](https://www.python-httpx.org/) for HTTPS requests. It sends `ROBLOX_API_KEY` only to Roblox's Open Cloud endpoints. Search and details use the Creator Store API; download URLs come from Asset Delivery; 2D previews come from the public Thumbnails API.
 
-`server.py` defines the MCP tools, `client.py` handles Roblox requests and responses, `config.py` reads environment settings, and `models.py` defines the returned data.
+`app.py` defines the MCP tools, `client.py` handles Roblox requests and responses, `config.py` reads environment settings, and `models.py` defines the returned data.
 
 | Tool | What it returns |
 |---|---|
