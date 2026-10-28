@@ -1,0 +1,38 @@
+[project]
+name = "roblox-assets-mcp"
+version = "0.1.0"
+description = "An MCP server for finding and retrieving Roblox Creator Store assets"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE.md"]
+requires-python = ">=3.12"
+authors = [{ name = "Petri-Hub" }]
+dependencies = [
+    "fastmcp>=4.0.10,<5",
+    "httpx>=0.28.1,<1",
+    "python-dotenv>=1.2,<2",
+]
+
+[project.urls]
+Repository = "https://github.com/Petri-Hub/roblox-assets-mcp"
+Issues = "https://github.com/Petri-Hub/roblox-assets-mcp/issues"
+
+[project.scripts]
+roblox-assets-mcp = "roblox_assets_mcp.server:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4,<10",
+    "ruff>=0.14,<1",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.21,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
