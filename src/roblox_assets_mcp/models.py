@@ -1,4 +1,8 @@
+from typing import Literal
+
 from pydantic import BaseModel
+
+Category = Literal["Audio", "Place", "Model", "Decal", "Plugin", "MeshPart", "Video", "FontFamily"]
 
 
 class Price(BaseModel):

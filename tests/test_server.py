@@ -10,7 +10,8 @@ import pytest
 from fastmcp import Client
 from fastmcp.exceptions import ToolError
 
-from roblox_assets_mcp.server import _validate_api_key, create_server
+from roblox_assets_mcp.client import RobloxClient
+from roblox_assets_mcp.server import create_server
 
 ASSET_ID = 123456
 ASSET = {
@@ -64,9 +65,9 @@ def test_dotenv_overrides_endpoint_defaults(tmp_path: Path) -> None:
         [
             sys.executable,
             "-c",
-            "from roblox_assets_mcp import server; "
-            "print(server.CREATOR_STORE_URL, server.DELIVERY_URL, "
-            "server.THUMBNAILS_URL, server.REQUEST_TIMEOUT, sep='\\n')",
+            "from roblox_assets_mcp import config; "
+            "print(config.CREATOR_STORE_URL, config.DELIVERY_URL, "
+            "config.THUMBNAILS_URL, config.REQUEST_TIMEOUT, sep='\\n')",
         ],
         env=environment,
         cwd=tmp_path,
@@ -153,14 +154,14 @@ def test_startup_check_requires_search_and_delivery_access() -> None:
         return httpx.Response(403, json={"message": "scope missing"})
 
     with pytest.raises(ToolError, match="Asset Delivery access check failed"):
-        asyncio.run(_validate_api_key("test-key", httpx.MockTransport(respond)))
+        asyncio.run(RobloxClient("test-key", httpx.MockTransport(respond)).validate_access())
 
     def allow(request: httpx.Request) -> httpx.Response:
         if request.url.path.endswith("assets:search"):
             return httpx.Response(200, json={"creatorStoreAssets": [ASSET]})
         return httpx.Response(200, json={"location": "https://fts.rbxcdn.com/asset"})
 
-    asyncio.run(_validate_api_key("test-key", httpx.MockTransport(allow)))
+    asyncio.run(RobloxClient("test-key", httpx.MockTransport(allow)).validate_access())
 
 
 def test_search_maps_pagination_and_paid_filter() -> None:
