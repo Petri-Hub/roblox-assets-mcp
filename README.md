@@ -16,7 +16,7 @@
 
 ## Why it exists
 
-I am building [a Roblox game with friends and an AI agent](https://github.com/Petri-Hub/roblox-with-swe). The agent can help with code, but it also needs the same raw material a human creator would look for: models, audio, decals, plugins, and other things already made for Roblox. This server gives it a small set of tools for that part of the work.
+[I am building a Roblox game with friends and an AI agent](https://github.com/Petri-Hub/roblox-with-swe). The agent can help with code, but it also needs the same raw material a human creator would look for: models, audio, decals, plugins, and other things already made for Roblox. This server gives it a small set of tools for that part of the work.
 
 For example, I can ask the agent to find a free forest cabin, check who made it and whether it contains scripts, inspect its preview, and get a URL for the asset it chooses. The agent can then fetch and examine the file in its own workspace before using it in a project.
 
