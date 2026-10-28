@@ -22,6 +22,8 @@ An assistant building a Roblox experience needs to discover reusable models, aud
 
 The server uses [FastMCP](https://gofastmcp.com/) over stdio and [HTTPX](https://www.python-httpx.org/) for HTTPS requests. It sends `ROBLOX_API_KEY` only to Roblox's Open Cloud endpoints. Search and details use the Creator Store API; download URLs come from Asset Delivery; 2D previews come from the public Thumbnails API.
 
+`server.py` defines the MCP tools, `client.py` handles Roblox requests and responses, `config.py` reads environment settings, and `models.py` defines the returned data.
+
 | Tool | What it returns |
 |---|---|
 | `search_assets` | Creator Store assets matching a query, category, optional free-only filter, and page token |
@@ -39,7 +41,7 @@ Create a Roblox Open Cloud API key with these [scopes](https://create.roblox.com
 
 Allow the machine running the MCP server in the key's IP restrictions. The public 2D thumbnail endpoint needs no additional scope. Keep the key in your MCP client's environment configuration, and revoke temporary keys after use.
 
-Once published to PyPI, most MCP clients can run it with `uvx`:
+Most MCP clients can run the published package with `uvx`:
 
 ```json
 {
@@ -72,7 +74,7 @@ The server also reads `.env` from its working directory. The following values ar
 
 After `uv sync`, run `make quality` to check formatting, lint, test, and build the package. Use `make format-apply` to format the code. The quality workflow calls the same Makefile targets for pull requests and pushes to `main`.
 
-The release workflow follows [FAM MCP](https://github.com/Petri-Hub/fam-mcp): publish a GitHub Release tagged with the package version, such as `v0.1.0`. It checks that the tag matches `pyproject.toml`, builds the distributions, and publishes them to PyPI with GitHub OIDC. Before the first release, configure a PyPI Trusted Publisher for this repository and the `PyPI - Production` GitHub environment.
+The release workflow follows [FAM MCP](https://github.com/Petri-Hub/fam-mcp): publish a GitHub Release tagged with the package version. It checks that the tag matches `pyproject.toml`, builds the distributions, and publishes them to PyPI with GitHub OIDC through the `PyPI - Production` GitHub environment.
 
 ## License
 
