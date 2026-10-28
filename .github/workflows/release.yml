@@ -26,20 +26,11 @@ jobs:
         env:
           RELEASE_TAG: ${{ github.event.release.tag_name }}
         run: |
-          uv run --no-project --python 3.12 python - <<'PY'
-          import os
-          import tomllib
-          from pathlib import Path
-
-          project_version = tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"]
-          tag_version = os.environ["RELEASE_TAG"].removeprefix("v")
-
-          if tag_version != project_version:
-              raise SystemExit(
-                  f"Release tag {os.environ['RELEASE_TAG']!r} does not match "
-                  f"pyproject.toml version {project_version!r}"
-              )
-          PY
+          version=$(uv version --short)
+          if [ "${RELEASE_TAG#v}" != "$version" ]; then
+            echo "::error::Release tag $RELEASE_TAG does not match pyproject.toml version $version"
+            exit 1
+          fi
 
       - name: Build distributions
         run: make build
