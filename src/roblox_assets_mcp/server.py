@@ -16,12 +16,8 @@ from roblox_assets_mcp.models import Asset, AssetDetails, DownloadLocation, Pric
 
 load_dotenv(Path.cwd() / ".env", override=False)
 
-CREATOR_STORE_URL = os.getenv(
-    "CREATOR_STORE_URL", "https://apis.roblox.com/toolbox-service/v2/assets"
-).rstrip("/")
-DELIVERY_URL = os.getenv(
-    "DELIVERY_URL", "https://apis.roblox.com/asset-delivery-api/v1/assetId"
-).rstrip("/")
+CREATOR_STORE_URL = os.getenv("CREATOR_STORE_URL", "https://apis.roblox.com/toolbox-service/v2/assets").rstrip("/")
+DELIVERY_URL = os.getenv("DELIVERY_URL", "https://apis.roblox.com/asset-delivery-api/v1/assetId").rstrip("/")
 THUMBNAILS_URL = os.getenv("THUMBNAILS_URL", "https://thumbnails.roblox.com/v1/assets").rstrip("/")
 try:
     REQUEST_TIMEOUT = float(os.getenv("REQUEST_TIMEOUT", "20.0"))
@@ -63,9 +59,7 @@ def _asset(item: dict[str, Any]) -> Asset:
     )
 
 
-async def _validate_api_key(
-    api_key: str, transport: httpx.AsyncBaseTransport | None = None
-) -> None:
+async def _validate_api_key(api_key: str, transport: httpx.AsyncBaseTransport | None = None) -> None:
     async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT, transport=transport) as client:
         try:
             search = await _request_json(
@@ -90,9 +84,7 @@ async def _validate_api_key(
             raise ToolError("Creator Store access check returned no usable asset.") from error
 
         try:
-            delivery = await _request_json(
-                client, "GET", f"{DELIVERY_URL}/{asset_id}", api_key=api_key
-            )
+            delivery = await _request_json(client, "GET", f"{DELIVERY_URL}/{asset_id}", api_key=api_key)
         except ToolError as error:
             raise ToolError(f"Asset Delivery access check failed: {error}") from error
         if not delivery.get("location"):
@@ -118,9 +110,7 @@ async def _request_json(
     except httpx.HTTPStatusError as error:
         status = error.response.status_code
         if status in (401, 403):
-            raise ToolError(
-                f"Roblox denied access (HTTP {status}). Check the API key and scopes."
-            ) from error
+            raise ToolError(f"Roblox denied access (HTTP {status}). Check the API key and scopes.") from error
         if status == 429:
             raise ToolError("Roblox rate limit reached (HTTP 429). Try again later.") from error
         raise ToolError(f"Roblox request failed (HTTP {status}).") from error
@@ -176,9 +166,7 @@ def create_server(api_key: str, *, transport: httpx.AsyncBaseTransport | None = 
         if page_token:
             body["pageToken"] = page_token
         async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT, transport=transport) as client:
-            payload = await _request_json(
-                client, "POST", f"{CREATOR_STORE_URL}:search", api_key=api_key, json=body
-            )
+            payload = await _request_json(client, "POST", f"{CREATOR_STORE_URL}:search", api_key=api_key, json=body)
         if not isinstance(payload.get("creatorStoreAssets"), list):
             raise ToolError("Roblox returned search results in an unexpected format.")
         try:
@@ -198,9 +186,7 @@ def create_server(api_key: str, *, transport: httpx.AsyncBaseTransport | None = 
             Asset metadata, thumbnail state, and a PNG URL when ready.
         """
         async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT, transport=transport) as client:
-            details = await _request_json(
-                client, "GET", f"{CREATOR_STORE_URL}/{asset_id}", api_key=api_key
-            )
+            details = await _request_json(client, "GET", f"{CREATOR_STORE_URL}/{asset_id}", api_key=api_key)
             thumbnails = await _request_json(
                 client,
                 "GET",
@@ -240,9 +226,7 @@ def create_server(api_key: str, *, transport: httpx.AsyncBaseTransport | None = 
             The asset ID and a temporary HTTPS CDN URL; no file is written.
         """
         async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT, transport=transport) as client:
-            payload = await _request_json(
-                client, "GET", f"{DELIVERY_URL}/{asset_id}", api_key=api_key
-            )
+            payload = await _request_json(client, "GET", f"{DELIVERY_URL}/{asset_id}", api_key=api_key)
         url = payload.get("location")
         parsed = urlparse(url) if isinstance(url, str) else None
         if not parsed or parsed.scheme != "https" or not parsed.hostname:

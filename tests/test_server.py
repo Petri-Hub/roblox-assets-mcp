@@ -90,9 +90,7 @@ def test_asset_tools_use_expected_endpoints_and_return_typed_data() -> None:
     def respond(request: httpx.Request) -> httpx.Response:
         requests.append(request)
         if request.url.path.endswith("assets:search"):
-            return httpx.Response(
-                200, json={"creatorStoreAssets": [ASSET], "nextPageToken": "next"}
-            )
+            return httpx.Response(200, json={"creatorStoreAssets": [ASSET], "nextPageToken": "next"})
         if request.url.host == "thumbnails.roblox.com":
             return httpx.Response(
                 200,
@@ -141,9 +139,7 @@ def test_roblox_authorization_failure_is_explicit() -> None:
     async def exercise() -> None:
         server = create_server("test-key", transport=httpx.MockTransport(deny))
         async with Client(server) as client:
-            result = await client.call_tool(
-                "search_assets", {"query": "house"}, raise_on_error=False
-            )
+            result = await client.call_tool("search_assets", {"query": "house"}, raise_on_error=False)
         assert result.is_error
         assert "Check the API key and scopes" in str(result.content)
 
