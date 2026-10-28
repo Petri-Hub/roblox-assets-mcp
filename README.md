@@ -36,9 +36,20 @@ The assistant calls three tools over local stdio. The server sends HTTPS request
 | `get_asset_details` | One asset's metadata and the state and URL of its 2D PNG thumbnail when ready |
 | `prepare_asset_download` | A temporary HTTPS CDN URL for one asset; the tool does not save the file |
 
-Search covers `Audio`, `Place`, `Model`, `Decal`, `Plugin`, `MeshPart`, `Video`, and `FontFamily`. It starts with free `Model` assets unless the assistant chooses another category or sets `free_only=false`. A returned `next_page_token` can be passed back as `page_token` to keep searching. Roblox may still be preparing a thumbnail, in which case the response contains its state without a thumbnail URL.
+The search tool accepts these asset types:
 
-The download URL expires, so the assistant should fetch it promptly. Asset Delivery may return a compressed asset; the environment downloading it needs to handle that format. This server does not install an asset into Studio, manage an inventory, or change anything in Roblox.
+| Asset type | Description | Example |
+|---|---|---|
+| `Audio` | Sound effects and music | Footsteps in a forest |
+| `Place` | A saved Roblox world and its contents | A starter map |
+| `Model` | A group of objects that can include geometry and scripts | A forest cabin |
+| `Decal` | An image applied to a surface | A warning sign |
+| `Plugin` | A tool that extends Roblox Studio | A terrain editor |
+| `MeshPart` | A custom 3D shape | A rock mesh |
+| `Video` | A clip for an in-game screen | A looping display |
+| `FontFamily` | A font for interface text | A pixel-style font |
+
+Search starts with free models. The assistant can choose another type, include paid results, and request more pages. Thumbnail images may still be pending, and download URLs expire. The server returns the URL; the assistant fetches the file in its own workspace.
 
 ## Installation
 
