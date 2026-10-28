@@ -410,8 +410,10 @@ uv sync --locked --group dev
 # Format the Python files after editing them.
 make format-apply
 
-# Check formatting and lint separately when needed.
+# Check Python formatting.
 make format-check
+
+# Check Python code with Ruff.
 make lint
 ```
 
@@ -427,30 +429,6 @@ make build
 # Run formatting, lint, tests and build together.
 make quality
 ```
-
-The [quality workflow](.github/workflows/quality.yml) runs the same checks for pull requests and pushes to `main`.
-
-## Release
-
-With the release changes ready on `main` and the [GitHub CLI](https://cli.github.com/) authenticated, bump the package version and publish a GitHub Release:
-
-```bash
-# Update pyproject.toml and uv.lock to the next patch version.
-uv version --bump patch
-
-# Check the version that will be published.
-make quality
-
-# Commit and push the version change.
-git add pyproject.toml uv.lock
-git commit -m "chore(release): bump package version"
-git push origin main
-
-# Publish a GitHub Release with a tag matching the package version.
-gh release create "v$(uv version --short)" --generate-notes
-```
-
-Use `--bump minor` or `--bump major` when the change calls for it. The [release workflow](.github/workflows/release.yml) checks the tag, builds the package and publishes it to PyPI through GitHub OIDC and the `PyPI - Production` environment. The PyPI page receives README changes with a new package version.
 
 ## Related projects
 
