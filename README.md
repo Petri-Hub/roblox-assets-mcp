@@ -53,7 +53,7 @@ Search starts with free models. The assistant can choose another type, include p
 
 ## Getting an API key
 
-Create a Roblox [Open Cloud API key](https://create.roblox.com/docs/cloud/open-cloud/api-keys) with both scopes below. On startup, the server checks Creator Store and Asset Delivery access and exits if `ROBLOX_API_KEY` is missing, invalid, or does not grant access. Later authorization or rate-limit failures appear as tool errors.
+Create a Roblox [Open Cloud API key](https://create.roblox.com/docs/cloud/open-cloud/api-keys) with both scopes below. On startup, the server checks Creator Store and Asset Delivery access and exits if the API key is missing, invalid, or lacks the required scopes. Later authorization or rate-limit failures appear as tool errors.
 
 | Scope | Used for |
 |---|---|
