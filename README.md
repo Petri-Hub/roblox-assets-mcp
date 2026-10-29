@@ -28,6 +28,20 @@ For example, I can ask the agent to find a free forest cabin, check who made it 
 
 The assistant calls three tools over local stdio. The server sends HTTPS requests to Roblox with [HTTPX](https://www.python-httpx.org/), using an Open Cloud API key for Creator Store and Asset Delivery. It reads 2D previews from the public Thumbnails API. The API key stays in the server process and is never part of a tool response.
 
+## Philosophy
+
+**Only the asset workflow.**<br>
+The three tools follow the path from a search to an inspected asset to a URL that the agent can fetch. Universe and place management belong to a different set of tools.
+
+**Let the assistant choose.**<br>
+Search returns structured names, creators, prices and IDs. Details add a preview and script flag when Roblox provides them. The agent has enough information to compare candidates before downloading one.
+
+**Keep the key local.**<br>
+Roblox authentication happens in the MCP process. The agent sees asset data and temporary URLs, while the key remains in the process environment. Access is checked before the server announces itself to the client.
+
+**Leave files with the caller.**<br>
+The server obtains the CDN location; the assistant decides where to fetch, inspect and store the asset. This keeps filesystem access and game integration in the environment that already owns the project.
+
 ## What it can do
 
 | Tool | What it returns |
@@ -321,19 +335,16 @@ These web apps connect to **remote** MCP servers. This package runs locally over
 
 </details>
 
-## Philosophy
+## Technologies
 
-**Only the asset workflow.**<br>
-The three tools follow the path from a search to an inspected asset to a URL that the agent can fetch. Universe and place management belong to a different set of tools.
-
-**Let the assistant choose.**<br>
-Search returns structured names, creators, prices and IDs. Details add a preview and script flag when Roblox provides them. The agent has enough information to compare candidates before downloading one.
-
-**Keep the key local.**<br>
-Roblox authentication happens in the MCP process. The agent sees asset data and temporary URLs, while the key remains in the process environment. Access is checked before the server announces itself to the client.
-
-**Leave files with the caller.**<br>
-The server obtains the CDN location; the assistant decides where to fetch, inspect and store the asset. This keeps filesystem access and game integration in the environment that already owns the project.
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Technology | Used for |
+|:---:|---|---|
+| <img src="https://cdn.simpleicons.org/modelcontextprotocol/9198A1" width="20" height="20" alt="" /> | [Model Context Protocol](https://modelcontextprotocol.io) | The protocol between the assistant and the local tools |
+| <img src="https://gofastmcp.com/assets/brand/blue-logo.png" height="20" alt="" /> | [FastMCP](https://gofastmcp.com) | Stdio server and typed tool registration |
+| <img src="https://cdn.simpleicons.org/python" width="20" height="20" alt="" /> | [Python](https://docs.python.org/3/) | The language of the server |
+| <img src="https://www.python-httpx.org/img/butterfly.png" height="20" alt="" /> | [HTTPX](https://www.python-httpx.org) | Async HTTPS requests to Roblox |
+| <img src="https://cdn.simpleicons.org/pydantic" width="20" height="20" alt="" /> | [Pydantic](https://docs.pydantic.dev/) | Models for the data returned by tools |
+| <img src="https://cdn.simpleicons.org/uv" width="20" height="20" alt="" /> | [uv](https://docs.astral.sh/uv/) | Dependencies, development and `uvx` distribution |
 
 ## What's inside
 
@@ -356,17 +367,6 @@ The server obtains the CDN location; the assistant decides where to fetch, inspe
 ├── Makefile                 # local quality commands
 └── pyproject.toml           # package metadata and dependencies
 ```
-
-## Technologies
-
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; | Technology | Used for |
-|:---:|---|---|
-| <img src="https://cdn.simpleicons.org/modelcontextprotocol/9198A1" width="20" height="20" alt="" /> | [Model Context Protocol](https://modelcontextprotocol.io) | The protocol between the assistant and the local tools |
-| <img src="https://gofastmcp.com/assets/brand/blue-logo.png" height="20" alt="" /> | [FastMCP](https://gofastmcp.com) | Stdio server and typed tool registration |
-| <img src="https://cdn.simpleicons.org/python" width="20" height="20" alt="" /> | [Python](https://docs.python.org/3/) | The language of the server |
-| <img src="https://www.python-httpx.org/img/butterfly.png" height="20" alt="" /> | [HTTPX](https://www.python-httpx.org) | Async HTTPS requests to Roblox |
-| <img src="https://cdn.simpleicons.org/pydantic" width="20" height="20" alt="" /> | [Pydantic](https://docs.pydantic.dev/) | Models for the data returned by tools |
-| <img src="https://cdn.simpleicons.org/uv" width="20" height="20" alt="" /> | [uv](https://docs.astral.sh/uv/) | Dependencies, development and `uvx` distribution |
 
 ## Development
 
