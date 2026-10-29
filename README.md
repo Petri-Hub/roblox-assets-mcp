@@ -1,4 +1,4 @@
-<h1 align="center">🧱 roblox-assets-mcp</h1>
+<h1 align="center">📦 roblox-assets-mcp</h1>
 
 <br>
 
