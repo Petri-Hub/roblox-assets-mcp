@@ -66,11 +66,7 @@ The server checks both authenticated Roblox services before opening its MCP conn
 
 ## Installation
 
-Roblox Assets MCP is published on [PyPI](https://pypi.org/project/roblox-assets-mcp/) and runs locally over **stdio**.
-
-### Client-specific instructions
-
-Choose your client below and replace `YOUR_ROBLOX_OPEN_CLOUD_API_KEY` with your key.
+Roblox Assets MCP is published on [PyPI](https://pypi.org/project/roblox-assets-mcp/) and runs locally over **stdio**. Choose your client below and replace `YOUR_ROBLOX_OPEN_CLOUD_API_KEY` with your key.
 
 <details>
 <summary>Hermes Agent (Pepper)</summary>
