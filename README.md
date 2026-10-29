@@ -51,13 +51,9 @@ The search tool accepts these asset types:
 
 Search starts with free models. The assistant can choose another type, include paid results, and request more pages. Thumbnail images may still be pending, and download URLs expire. The server returns the URL; the assistant fetches the file in its own workspace.
 
-## Installation
+## Getting an API key
 
-Roblox Assets MCP is published on [PyPI](https://pypi.org/project/roblox-assets-mcp/) as a local **stdio** server. With [`uv`](https://docs.astral.sh/uv/getting-started/installation/) installed, an MCP client can run it through `uvx roblox-assets-mcp`. The package requires Python 3.12 or newer; `uvx` can obtain a compatible Python if needed.
-
-### What you will need
-
-Create a Roblox [Open Cloud API key](https://create.roblox.com/docs/cloud/open-cloud/api-keys) with these scopes:
+Create a Roblox [Open Cloud API key](https://create.roblox.com/docs/cloud/open-cloud/api-keys) with both scopes:
 
 | Scope | Used for |
 |---|---|
@@ -68,9 +64,13 @@ If you enable IP restrictions, allow the address of the machine running the MCP 
 
 The server checks both authenticated Roblox services before opening its MCP connection. A missing or blank `ROBLOX_API_KEY`, invalid key, missing scope, or unusable access check stops startup with an error. If Roblox rejects a later call or rate limits it, the tool reports that failure explicitly.
 
+## Installation
+
+Roblox Assets MCP is published on [PyPI](https://pypi.org/project/roblox-assets-mcp/) and runs locally over **stdio**.
+
 ### Client-specific instructions
 
-Each example below launches the same package. Replace `YOUR_ROBLOX_OPEN_CLOUD_API_KEY` with your key in a private user configuration, or use your client's secret or environment-variable support where available. If `uvx` is not on the client's `PATH`, use its absolute path as the command.
+Choose your client below and replace `YOUR_ROBLOX_OPEN_CLOUD_API_KEY` with your key.
 
 <details>
 <summary>Hermes Agent (Pepper)</summary>
