@@ -327,19 +327,6 @@ These web apps connect to **remote** MCP servers. This package runs locally over
 
 </details>
 
-### Local development and configuration
-
-From this repository, `uv sync` installs the project and `uv run roblox-assets-mcp` launches it with `ROBLOX_API_KEY` set. It also reads a `.env` file from its working directory; the file is ignored by Git, and process environment variables take precedence. If your client starts the server elsewhere, its working directory determines which `.env` file is read.
-
-The API URLs and request timeout are optional overrides. Their defaults are:
-
-| Variable | Default |
-|---|---|
-| `CREATOR_STORE_URL` | `https://apis.roblox.com/toolbox-service/v2/assets` |
-| `DELIVERY_URL` | `https://apis.roblox.com/asset-delivery-api/v1/assetId` |
-| `THUMBNAILS_URL` | `https://thumbnails.roblox.com/v1/assets` |
-| `REQUEST_TIMEOUT` | `20.0` seconds |
-
 ## Philosophy
 
 **Only the asset workflow.**<br>
