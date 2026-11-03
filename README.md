@@ -65,6 +65,8 @@ The search tool accepts these asset types:
 
 Search starts with free models. The assistant can choose another type, include paid results, and request more pages. Thumbnail images may still be pending, and download URLs expire. The server returns the URL; the assistant fetches the file in its own workspace.
 
+Asset details request font-family previews at Roblox's `1200x80` font size; other asset types use `420x420`. The returned image can have a different aspect ratio or transparency, so display it without stretching and choose a suitable background.
+
 ## Getting an API key
 
 Create a Roblox [Open Cloud API key](https://create.roblox.com/docs/cloud/open-cloud/api-keys) with both scopes below. On startup, the server checks Creator Store and Asset Delivery access and exits if the API key is missing, invalid, or lacks the required scopes. Later authorization or rate-limit failures appear as tool errors.
