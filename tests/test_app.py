@@ -130,7 +130,26 @@ def test_asset_tools_use_expected_endpoints_and_return_typed_data() -> None:
     assert requests[0].headers["x-api-key"] == "test-key"
     assert b'"maxPriceCents":0' in requests[0].content
     assert requests[2].url.host == "thumbnails.roblox.com"
+    assert requests[2].url.params["size"] == "420x420"
     assert "x-api-key" not in requests[2].headers
+
+
+@pytest.mark.parametrize("asset_type,expected_size", [(73, "1200x80"), (10, "420x420"), (None, "420x420")])
+def test_asset_details_requests_thumbnail_size_for_asset_type(asset_type: int | None, expected_size: str) -> None:
+    thumbnail_requests: list[httpx.Request] = []
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        if request.url.host == "thumbnails.roblox.com":
+            thumbnail_requests.append(request)
+            return httpx.Response(200, json={"data": [{"targetId": ASSET_ID, "state": "Pending"}]})
+        return httpx.Response(200, json={"asset": {"id": ASSET_ID, "name": "Example", "assetTypeId": asset_type}})
+
+    result = asyncio.run(RobloxClient("test-key", httpx.MockTransport(respond)).get_asset_details(ASSET_ID))
+
+    assert result.thumbnail_url is None
+    assert result.thumbnail_state == "Pending"
+    assert len(thumbnail_requests) == 1
+    assert thumbnail_requests[0].url.params["size"] == expected_size
 
 
 def test_roblox_authorization_failure_is_explicit() -> None:

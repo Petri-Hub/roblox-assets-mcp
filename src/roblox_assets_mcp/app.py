@@ -55,6 +55,8 @@ def create_server(api_key: str, *, transport: httpx.AsyncBaseTransport | None = 
     async def get_asset_details(asset_id: AssetId) -> AssetDetails:
         """Get a Creator Store asset's metadata and its 2D thumbnail URL.
 
+        Font families use Roblox's 1200x80 font preview; other assets use 420x420.
+
         Args:
             asset_id: ID from search_assets or a Roblox asset page.
 

@@ -8,6 +8,8 @@ from fastmcp.exceptions import ToolError
 from roblox_assets_mcp.config import CREATOR_STORE_URL, DELIVERY_URL, REQUEST_TIMEOUT, THUMBNAILS_URL
 from roblox_assets_mcp.models import Asset, AssetDetails, Category, DownloadLocation, Price, SearchResults
 
+FONT_FAMILY_ASSET_TYPE_ID = 73
+
 
 def _parse_price(product: dict[str, Any]) -> Price | None:
     raw_price = product.get("purchasePrice")
@@ -142,13 +144,17 @@ class RobloxClient:
         """Read asset metadata and its current 2D thumbnail state."""
         async with httpx.AsyncClient(timeout=REQUEST_TIMEOUT, transport=self._transport) as client:
             details = await _request_json(client, "GET", f"{CREATOR_STORE_URL}/{asset_id}", api_key=self._api_key)
+            try:
+                asset = _parse_asset(details)
+            except (KeyError, TypeError, ValueError) as error:
+                raise ToolError("Roblox returned asset details in an unexpected format.") from error
             thumbnails = await _request_json(
                 client,
                 "GET",
                 THUMBNAILS_URL,
                 params={
                     "assetIds": asset_id,
-                    "size": "420x420",
+                    "size": "1200x80" if asset.asset_type_id == FONT_FAMILY_ASSET_TYPE_ID else "420x420",
                     "format": "Png",
                     "isCircular": "false",
                 },
@@ -156,7 +162,6 @@ class RobloxClient:
         if not isinstance(thumbnails.get("data"), list):
             raise ToolError("Roblox returned thumbnails in an unexpected format.")
         try:
-            asset = _parse_asset(details)
             thumbnail = next(
                 (entry for entry in thumbnails["data"] if entry.get("targetId") == asset_id),
                 {},
