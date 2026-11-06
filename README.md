@@ -59,20 +59,6 @@ The server obtains download URLs without saving files. Uploads read an absolute 
 
 Uploading creates an asset under the supplied user or group; it does not create a Creator Store listing. Rollback and archive affect existing assets; archived assets may stop working in experiences. Confirm the intended action and asset before calling them. In live tests, Roblox allowed archiving a Decal but returned an error for a Model because that asset type is not archivable.
 
-### Upload and manage an asset
-
-MCP tool arguments are JSON. For example, create a model from a file on the server:
-
-```json
-{"file_path":"/home/lemon/workspace/sword.fbx","asset_type":"Model","display_name":"Sword","description":"A sword","creator_id":123456,"creator_type":"user","expected_price":0}
-```
-
-The server sends a multipart request: the `request` part contains Roblox JSON metadata and `fileContent` contains the file. A typical response is `{"path":"operations/OPERATION_ID","done":false}`. Call `get_asset_operation` with `{"operation_id":"operations/OPERATION_ID"}`; a completed response can contain `done: true` and a `response` with the asset ID, or an `error`. Completion does not guarantee moderation or in-game usability.
-
-To update metadata, call `update_asset` with `{"asset_id":123,"metadata":{"displayName":"New name"},"update_mask":"displayName"}`. To update Model content, add `"file_path":"/absolute/model.fbx"` and `"asset_type":"Model"`; content updates may return an operation. Roblox's metadata fields use camelCase. Version tools take `asset_id` and, for an individual version or rollback, `version_number`. The versions listing takes `page_size` (1–50) and `page_token`; a top-level array from Roblox is wrapped as `{"versions":[...]}`.
-
-The server accepts supported extensions and non-empty files up to 20 MiB. Roblox's [asset limits](https://create.roblox.com/docs/cloud/guides/usage-assets#supported-asset-types-and-limits) apply in addition: only Model content can be updated; image, decal and audio content cannot. Mesh uploads accept Roblox mesh data downloaded through Asset Delivery; use Model for Blender FBX/GLB exports. The API's video size documentation differs from its general limit, so this server currently applies the 20 MiB limit to video too.
-
 The search tool accepts these asset types:
 
 | Asset type | Description | Example |
