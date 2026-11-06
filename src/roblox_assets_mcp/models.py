@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel
 
 Category = Literal["Audio", "Place", "Model", "Decal", "Plugin", "MeshPart", "Video", "FontFamily"]
+UploadType = Literal["Animation", "Audio", "Decal", "Image", "Mesh", "Model", "Video"]
 
 
 class Price(BaseModel):

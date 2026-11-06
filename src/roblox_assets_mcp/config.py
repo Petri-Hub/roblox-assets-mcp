@@ -8,6 +8,7 @@ load_dotenv(Path.cwd() / ".env", override=False)
 
 CREATOR_STORE_URL = os.getenv("CREATOR_STORE_URL", "https://apis.roblox.com/toolbox-service/v2/assets").rstrip("/")
 DELIVERY_URL = os.getenv("DELIVERY_URL", "https://apis.roblox.com/asset-delivery-api/v1/assetId").rstrip("/")
+ASSETS_URL = os.getenv("ASSETS_URL", "https://apis.roblox.com/assets/v1").rstrip("/")
 THUMBNAILS_URL = os.getenv("THUMBNAILS_URL", "https://thumbnails.roblox.com/v1/assets").rstrip("/")
 try:
     REQUEST_TIMEOUT = float(os.getenv("REQUEST_TIMEOUT", "20.0"))
