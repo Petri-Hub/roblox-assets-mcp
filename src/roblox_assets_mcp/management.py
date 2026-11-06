@@ -65,6 +65,14 @@ class AssetManager:
                 ) from error
             if status == 429:
                 raise ToolError("Roblox rate limit reached (HTTP 429). Try again later.") from error
+            if status == 400:
+                try:
+                    message = error.response.json().get("message", "")
+                    if isinstance(message, str) and message:
+                        message = " ".join(message.replace(self.api_key, "[redacted]").split())[:300]
+                        raise ToolError(f"Roblox asset request failed (HTTP 400): {message}") from error
+                except (ValueError, AttributeError):
+                    pass
             raise ToolError(f"Roblox asset request failed (HTTP {status}).") from error
         except (httpx.RequestError, ValueError) as error:
             raise ToolError("Could not read a valid response from Roblox.") from error

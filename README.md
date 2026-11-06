@@ -57,7 +57,7 @@ The server obtains download URLs without saving files. Uploads read an absolute 
 | `rollback_asset_version` | Restore an earlier version |
 | `archive_asset`, `restore_asset` | Archive or restore an asset |
 
-Uploading creates an asset under the supplied user or group; it does not create a Creator Store listing. Rollback and archive affect existing assets; archived assets may stop working in experiences. Confirm the intended action and asset before calling them.
+Uploading creates an asset under the supplied user or group; it does not create a Creator Store listing. Rollback and archive affect existing assets; archived assets may stop working in experiences. Confirm the intended action and asset before calling them. In live tests, Roblox allowed archiving a Decal but returned an error for a Model because that asset type is not archivable.
 
 ### Upload and manage an asset
 
@@ -92,7 +92,7 @@ Asset details request font-family previews at Roblox's `1200x80` font size; othe
 
 ## Getting an API key
 
-Create a Roblox [Open Cloud API key](https://create.roblox.com/docs/cloud/open-cloud/api-keys) with the scopes needed for your workflow. On startup, the server checks Creator Store and Asset Delivery access; asset-management permissions are checked by Roblox when those tools are called.
+Create a Roblox [Open Cloud API key](https://create.roblox.com/docs/cloud/open-cloud/api-keys) with the scopes needed for your workflow. By default, the server checks Creator Store and Asset Delivery access on startup; asset-management permissions are checked by Roblox when those tools are called. If your key has only asset-management permissions, set `ROBLOX_VALIDATE_SEARCH_ACCESS=false` in the MCP process environment to skip the search and delivery startup checks. Search and download tools will still fail if their scopes are missing.
 
 | Scope | Used for |
 |---|---|

@@ -183,7 +183,7 @@ def create_server(api_key: str, *, transport: httpx.AsyncBaseTransport | None = 
         return await manager.request(
             "POST",
             f"/assets/{asset_id}/versions:rollback",
-            files={"assetVersion": (None, f"assets/{asset_id}/versions/{version_number}")},
+            json={"assetVersion": f"assets/{asset_id}/versions/{version_number}"},
         )
 
     @mcp.tool
@@ -204,10 +204,14 @@ def main() -> None:
     api_key = os.environ.get("ROBLOX_API_KEY", "")
     if not api_key.strip():
         raise SystemExit("ROBLOX_API_KEY is required to start roblox-assets-mcp")
-    try:
-        asyncio.run(RobloxClient(api_key).validate_access())
-    except ToolError as error:
-        raise SystemExit(f"ROBLOX_API_KEY validation failed: {error}") from error
+    check_search = os.environ.get("ROBLOX_VALIDATE_SEARCH_ACCESS", "true").lower()
+    if check_search not in {"true", "false"}:
+        raise SystemExit("ROBLOX_VALIDATE_SEARCH_ACCESS must be true or false")
+    if check_search == "true":
+        try:
+            asyncio.run(RobloxClient(api_key).validate_access())
+        except ToolError as error:
+            raise SystemExit(f"ROBLOX_API_KEY validation failed: {error}") from error
     create_server(api_key).run(transport="stdio")
 
 

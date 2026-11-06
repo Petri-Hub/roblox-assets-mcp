@@ -93,6 +93,7 @@ def test_lifecycle_routes_and_responses() -> None:
     assert b"filename=" not in requests[2].content
     assert requests[3].url.params["pageToken"] == "next"
     assert b"assets/123/versions/2" in requests[5].content
+    assert requests[5].headers["content-type"] == "application/json"
 
 
 def test_upload_validation_prevents_bad_requests(tmp_path: Path) -> None:
@@ -126,3 +127,18 @@ def test_upload_validation_prevents_bad_requests(tmp_path: Path) -> None:
 
     asyncio.run(exercise())
     assert not sent
+
+
+def test_api_error_explains_invalid_asset_type_and_redacts_key() -> None:
+    def respond(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(400, json={"message": "Model cannot be archived; credential test-key"})
+
+    async def exercise() -> None:
+        async with Client(create_server("test-key", transport=httpx.MockTransport(respond))) as client:
+            result = await client.call_tool("archive_asset", {"asset_id": 123}, raise_on_error=False)
+            assert result.is_error
+            text = str(result.content)
+            assert "Model cannot be archived" in text
+            assert "test-key" not in text
+
+    asyncio.run(exercise())

@@ -49,6 +49,38 @@ def test_missing_key_fails_before_stdio_starts(tmp_path: Path) -> None:
     assert result.stdout == ""
 
 
+def test_management_only_key_can_skip_search_preflight(tmp_path: Path) -> None:
+    environment = {
+        **os.environ,
+        "ROBLOX_API_KEY": "test-key",
+        "ROBLOX_VALIDATE_SEARCH_ACCESS": "false",
+        "CREATOR_STORE_URL": "http://127.0.0.1:1/assets",
+        "REQUEST_TIMEOUT": "1",
+    }
+    request = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "protocolVersion": "2025-03-26",
+            "capabilities": {},
+            "clientInfo": {"name": "test", "version": "1"},
+        },
+    }
+    result = subprocess.run(
+        [sys.executable, "-m", "roblox_assets_mcp.app"],
+        env=environment,
+        cwd=tmp_path,
+        input=json.dumps(request) + "\n",
+        capture_output=True,
+        text=True,
+        timeout=15,
+        check=False,
+    )
+    assert result.returncode == 0
+    assert json.loads(result.stdout)["id"] == 1
+
+
 def test_dotenv_overrides_endpoint_defaults(tmp_path: Path) -> None:
     (tmp_path / ".env").write_text(
         "CREATOR_STORE_URL=https://creator.example/assets/\n"
