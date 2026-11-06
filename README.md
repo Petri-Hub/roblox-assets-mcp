@@ -2,7 +2,7 @@
 
 <br>
 
-<h3 align="center">An MCP server for finding Roblox Creator Store assets.<br>Give an assistant a way to search, inspect, and retrieve what a game needs.</h3>
+<h3 align="center">An MCP server for finding and managing Roblox assets.<br>Search Creator Store and manage assets in your own account.</h3>
 
 <p align="center">
   <a href="https://pypi.org/project/roblox-assets-mcp/"><img alt="PyPI version" src="https://img.shields.io/pypi/v/roblox-assets-mcp?logo=pypi&logoColor=white" /></a> <a href="https://github.com/Petri-Hub/roblox-assets-mcp/actions/workflows/quality.yml"><img alt="Quality" src="https://github.com/Petri-Hub/roblox-assets-mcp/actions/workflows/quality.yml/badge.svg?branch=main" /></a> <img alt="Python 3.12+" src="https://img.shields.io/badge/python-3.12%2B-3776AB?logo=python&logoColor=white" /> <a href="LICENSE.md"><img alt="License" src="https://img.shields.io/github/license/Petri-Hub/roblox-assets-mcp" /></a> <img alt="Time spent" src="https://img.shields.io/endpoint?url=https%3A%2F%2Flab-wakapi.petri.zip%2Fapi%2Fcompat%2Fshields%2Fv1%2FPetri%2Fproject%3Aroblox-assets-mcp%2Finterval%3Aall_time&label=time%20spent&logo=wakatime&logoColor=white&color=blue&cacheSeconds=3600" />
@@ -12,7 +12,7 @@
 
 ## About
 
-> **TL;DR:** a local, asset-only MCP server for Roblox Creator Store. An assistant can search reusable assets, inspect their metadata and 2D thumbnails, and request a temporary download URL. It leaves downloading and working with the asset to the assistant's own environment.
+> **TL;DR:** a local MCP server to search Roblox Creator Store, inspect assets, and upload and manage assets owned by a user or group.
 
 ## Why it exists
 
@@ -26,12 +26,12 @@ For example, I can ask the agent to find a free forest cabin, check who made it 
   <img src="assets/how-it-works.svg" alt="You ask an AI assistant for an asset. It calls the local roblox-assets-mcp server over stdio. The server searches Roblox Creator Store and reads asset details, gets a 2D preview from the Thumbnails API, and asks Asset Delivery for a temporary CDN URL. The assistant receives the results and fetches the file in its own workspace." />
 </p>
 
-The assistant calls three tools over local stdio. The server sends HTTPS requests to Roblox with [HTTPX](https://www.python-httpx.org/), using an Open Cloud API key for Creator Store and Asset Delivery. It reads 2D previews from the public Thumbnails API. The API key stays in the server process and is never part of a tool response.
+The assistant calls tools over local stdio. The server sends HTTPS requests to Roblox with [HTTPX](https://www.python-httpx.org/), using an Open Cloud API key for Creator Store, Asset Delivery and asset management. It reads 2D previews from the public Thumbnails API. Uploads read a file from the MCP server's own filesystem.
 
 ## Philosophy
 
 **Only the asset workflow.**<br>
-The three tools follow the path from a search to an inspected asset to a URL that the agent can fetch. Universe and place management belong to a different set of tools.
+The tools cover searching, inspecting and downloading assets, as well as uploading and maintaining owned assets. Universe and place management belong to a different set of tools.
 
 **Let the assistant choose.**<br>
 Search returns structured names, creators, prices and IDs. Details add a preview and script flag when Roblox provides them. The agent has enough information to compare candidates before downloading one.
@@ -39,8 +39,8 @@ Search returns structured names, creators, prices and IDs. Details add a preview
 **Keep the key local.**<br>
 Roblox authentication happens in the MCP process. The agent sees asset data and temporary URLs, while the key remains in the process environment. Access is checked before the server announces itself to the client.
 
-**Leave files with the caller.**<br>
-The server obtains the CDN location; the assistant decides where to fetch, inspect and store the asset. This keeps filesystem access and game integration in the environment that already owns the project.
+**Use the workspace.**<br>
+The server obtains download URLs without saving files. Uploads read an absolute file path on the server; run the MCP in the same filesystem as the assistant's workspace, including when using SSH.
 
 ## What it can do
 
@@ -49,6 +49,15 @@ The server obtains the CDN location; the assistant decides where to fetch, inspe
 | `search_assets` | Matching Creator Store assets, including names, creators, prices when available, and a token for the next page |
 | `get_asset_details` | One asset's metadata and the state and URL of its 2D PNG thumbnail when ready |
 | `prepare_asset_download` | A temporary HTTPS CDN URL for one asset; the tool does not save the file |
+| `create_asset` | Upload a local file and return the Roblox operation |
+| `get_asset_operation` | Check a create or update operation |
+| `get_owned_asset` | Read Open Cloud metadata for an asset ID |
+| `update_asset` | Update metadata or supported model content |
+| `list_asset_versions`, `get_asset_version` | Inspect versions |
+| `rollback_asset_version` | Restore an earlier version |
+| `archive_asset`, `restore_asset` | Archive or restore an asset |
+
+Uploading creates an asset under the supplied user or group; it does not create a Creator Store listing. Rollback and archive affect existing assets; archived assets may stop working in experiences. Confirm the intended action and asset before calling them. In live tests, Roblox allowed archiving a Decal but returned an error for a Model because that asset type is not archivable.
 
 The search tool accepts these asset types:
 
@@ -69,12 +78,14 @@ Asset details request font-family previews at Roblox's `1200x80` font size; othe
 
 ## Getting an API key
 
-Create a Roblox [Open Cloud API key](https://create.roblox.com/docs/cloud/open-cloud/api-keys) with both scopes below. On startup, the server checks Creator Store and Asset Delivery access and exits if the API key is missing, invalid, or lacks the required scopes. Later authorization or rate-limit failures appear as tool errors.
+Create a Roblox [Open Cloud API key](https://create.roblox.com/docs/cloud/open-cloud/api-keys) with the scopes needed for your workflow. By default, the server checks Creator Store and Asset Delivery access on startup; asset-management permissions are checked by Roblox when those tools are called. If your key has only asset-management permissions, set `ROBLOX_VALIDATE_SEARCH_ACCESS=false` in the MCP process environment to skip the search and delivery startup checks. Search and download tools will still fail if their scopes are missing.
 
 | Scope | Used for |
 |---|---|
 | `creator-store-product:read` | Searching Creator Store and reading asset details |
 | `legacy-asset:manage` | Asking Asset Delivery for an asset's download location |
+| `asset:read` | Reading owned assets, operations and versions; also required by Roblox for writes |
+| `asset:write` | Creating, updating, rolling back, archiving and restoring assets |
 
 If you enable IP restrictions, allow the address of the machine running the MCP server. The public 2D thumbnail endpoint needs no additional scope. Keep the key in your MCP client's environment configuration, never in a project file that you commit. A key used only for testing can be revoked afterward.
 
@@ -362,6 +373,7 @@ These web apps connect to **remote** MCP servers. This package runs locally over
 ├── src/roblox_assets_mcp/
 │   ├── app.py               # stdio server, tools and startup check
 │   ├── client.py            # Roblox HTTP requests and response parsing
+│   ├── management.py        # Open Cloud asset lifecycle requests
 │   ├── config.py            # environment settings and their defaults
 │   └── models.py            # typed tool responses and asset categories
 │
