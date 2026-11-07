@@ -17,7 +17,9 @@ def test_create_and_update_upload_files_from_server_filesystem(tmp_path: Path) -
         return httpx.Response(200, json={"path": "operations/op_123", "done": False})
 
     async def exercise() -> None:
-        async with Client(create_server("test-key", transport=httpx.MockTransport(respond))) as client:
+        async with Client(
+            create_server("test-key", owner_id="42", owner_type="user", transport=httpx.MockTransport(respond))
+        ) as client:
             result = await client.call_tool(
                 "create_asset",
                 {
@@ -25,7 +27,6 @@ def test_create_and_update_upload_files_from_server_filesystem(tmp_path: Path) -
                     "asset_type": "Model",
                     "display_name": "Sword",
                     "description": "Test",
-                    "creator_id": 42,
                 },
             )
             assert result.structured_content["path"] == "operations/op_123"
@@ -62,7 +63,9 @@ def test_lifecycle_routes_and_responses() -> None:
         return httpx.Response(200, json={"path": "assets/123", "done": True})
 
     async def exercise() -> None:
-        async with Client(create_server("test-key", transport=httpx.MockTransport(respond))) as client:
+        async with Client(
+            create_server("test-key", owner_id="42", owner_type="user", transport=httpx.MockTransport(respond))
+        ) as client:
             await client.call_tool("get_asset_operation", {"operation_id": "operations/op_1"})
             await client.call_tool("get_owned_asset", {"asset_id": 123, "read_mask": "state"})
             await client.call_tool(
@@ -106,11 +109,13 @@ def test_upload_validation_prevents_bad_requests(tmp_path: Path) -> None:
         return httpx.Response(200, json={})
 
     async def exercise() -> None:
-        async with Client(create_server("test-key", transport=httpx.MockTransport(respond))) as client:
+        async with Client(
+            create_server("test-key", owner_id="42", owner_type="user", transport=httpx.MockTransport(respond))
+        ) as client:
             for path, kind in [("relative.fbx", "Model"), (str(model), "Decal")]:
                 result = await client.call_tool(
                     "create_asset",
-                    {"file_path": path, "asset_type": kind, "display_name": "x", "description": "", "creator_id": 1},
+                    {"file_path": path, "asset_type": kind, "display_name": "x", "description": ""},
                     raise_on_error=False,
                 )
                 assert result.is_error
@@ -134,7 +139,9 @@ def test_api_error_explains_invalid_asset_type_and_redacts_key() -> None:
         return httpx.Response(400, json={"message": "Model cannot be archived; credential test-key"})
 
     async def exercise() -> None:
-        async with Client(create_server("test-key", transport=httpx.MockTransport(respond))) as client:
+        async with Client(
+            create_server("test-key", owner_id="42", owner_type="user", transport=httpx.MockTransport(respond))
+        ) as client:
             result = await client.call_tool("archive_asset", {"asset_id": 123}, raise_on_error=False)
             assert result.is_error
             text = str(result.content)
@@ -142,3 +149,28 @@ def test_api_error_explains_invalid_asset_type_and_redacts_key() -> None:
             assert "test-key" not in text
 
     asyncio.run(exercise())
+
+
+def test_group_owner_is_used_without_exposing_creator_arguments(tmp_path: Path) -> None:
+    model = tmp_path / "model.fbx"
+    model.write_bytes(b"data")
+    requests: list[httpx.Request] = []
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(200, json={})
+
+    async def exercise() -> None:
+        server = create_server("test-key", owner_id="987", owner_type="group", transport=httpx.MockTransport(respond))
+        async with Client(server) as client:
+            tool = next(tool for tool in await client.list_tools() if tool.name == "create_asset")
+            assert "creator_id" not in tool.input_schema["properties"]
+            assert "creator_type" not in tool.input_schema["properties"]
+            await client.call_tool(
+                "create_asset",
+                {"file_path": str(model), "asset_type": "Model", "display_name": "Model", "description": ""},
+            )
+
+    asyncio.run(exercise())
+    assert b'"groupId": "987"' in requests[0].content
+    assert b'"userId"' not in requests[0].content

@@ -91,7 +91,7 @@ If you enable IP restrictions, allow the address of the machine running the MCP 
 
 ## Installation
 
-Roblox Assets MCP is published on [PyPI](https://pypi.org/project/roblox-assets-mcp/) and runs locally over **stdio**. Choose your client below and replace `YOUR_ROBLOX_OPEN_CLOUD_API_KEY` with your key.
+Roblox Assets MCP is published on [PyPI](https://pypi.org/project/roblox-assets-mcp/) and runs locally over **stdio**. Choose your client below and replace `YOUR_ROBLOX_OPEN_CLOUD_API_KEY` with your key. Configure `ROBLOX_OWNER_ID` (a positive Roblox user or group ID) and `ROBLOX_OWNER_TYPE` (`user` or `group`) in the MCP server environment. Both are required at startup; uploads use this owner automatically. Existing installations must add these variables.
 
 <details>
 <summary>Hermes Agent (Pepper)</summary>
@@ -138,7 +138,9 @@ Open **Settings → Developer → Edit Config** and add this entry inside `mcpSe
       "command": "uvx",
       "args": ["roblox-assets-mcp"],
       "env": {
-        "ROBLOX_API_KEY": "YOUR_ROBLOX_OPEN_CLOUD_API_KEY"
+        "ROBLOX_API_KEY": "YOUR_ROBLOX_OPEN_CLOUD_API_KEY",
+        "ROBLOX_OWNER_ID": "123456",
+        "ROBLOX_OWNER_TYPE": "user"
       }
     }
   }
@@ -177,7 +179,9 @@ Add this server under `mcp` in your user `~/.config/opencode/opencode.json` or p
       "type": "local",
       "command": ["uvx", "roblox-assets-mcp"],
       "environment": {
-        "ROBLOX_API_KEY": "YOUR_ROBLOX_OPEN_CLOUD_API_KEY"
+        "ROBLOX_API_KEY": "YOUR_ROBLOX_OPEN_CLOUD_API_KEY",
+        "ROBLOX_OWNER_ID": "123456",
+        "ROBLOX_OWNER_TYPE": "user"
       },
       "enabled": true
     }
@@ -254,7 +258,9 @@ Add this entry under `mcpServers` in `.cursor/mcp.json`:
       "command": "uvx",
       "args": ["roblox-assets-mcp"],
       "env": {
-        "ROBLOX_API_KEY": "YOUR_ROBLOX_OPEN_CLOUD_API_KEY"
+        "ROBLOX_API_KEY": "YOUR_ROBLOX_OPEN_CLOUD_API_KEY",
+        "ROBLOX_OWNER_ID": "123456",
+        "ROBLOX_OWNER_TYPE": "user"
       }
     }
   }
@@ -278,7 +284,9 @@ Create or edit `.vscode/mcp.json`:
       "command": "uvx",
       "args": ["roblox-assets-mcp"],
       "env": {
-        "ROBLOX_API_KEY": "YOUR_ROBLOX_OPEN_CLOUD_API_KEY"
+        "ROBLOX_API_KEY": "YOUR_ROBLOX_OPEN_CLOUD_API_KEY",
+        "ROBLOX_OWNER_ID": "123456",
+        "ROBLOX_OWNER_TYPE": "user"
       }
     }
   }
@@ -301,7 +309,9 @@ Add this entry under `context_servers` in Zed's `settings.json`:
       "command": "uvx",
       "args": ["roblox-assets-mcp"],
       "env": {
-        "ROBLOX_API_KEY": "YOUR_ROBLOX_OPEN_CLOUD_API_KEY"
+        "ROBLOX_API_KEY": "YOUR_ROBLOX_OPEN_CLOUD_API_KEY",
+        "ROBLOX_OWNER_ID": "123456",
+        "ROBLOX_OWNER_TYPE": "user"
       }
     }
   }

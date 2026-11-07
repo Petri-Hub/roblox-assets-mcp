@@ -53,6 +53,8 @@ def test_management_only_key_can_skip_search_preflight(tmp_path: Path) -> None:
     environment = {
         **os.environ,
         "ROBLOX_API_KEY": "test-key",
+        "ROBLOX_OWNER_ID": "42",
+        "ROBLOX_OWNER_TYPE": "user",
         "ROBLOX_VALIDATE_SEARCH_ACCESS": "false",
         "CREATOR_STORE_URL": "http://127.0.0.1:1/assets",
         "REQUEST_TIMEOUT": "1",
@@ -142,7 +144,7 @@ def test_asset_tools_use_expected_endpoints_and_return_typed_data() -> None:
         return httpx.Response(200, json=ASSET)
 
     async def exercise() -> None:
-        server = create_server("test-key", transport=httpx.MockTransport(respond))
+        server = create_server("test-key", owner_id="42", owner_type="user", transport=httpx.MockTransport(respond))
         async with Client(server) as client:
             search = await client.call_tool(
                 "search_assets", {"query": "stone house", "category": "Model", "free_only": True}
@@ -189,7 +191,7 @@ def test_roblox_authorization_failure_is_explicit() -> None:
         return httpx.Response(403, json={"message": "denied"})
 
     async def exercise() -> None:
-        server = create_server("test-key", transport=httpx.MockTransport(deny))
+        server = create_server("test-key", owner_id="42", owner_type="user", transport=httpx.MockTransport(deny))
         async with Client(server) as client:
             result = await client.call_tool("search_assets", {"query": "house"}, raise_on_error=False)
         assert result.is_error
@@ -223,7 +225,7 @@ def test_search_maps_pagination_and_paid_filter() -> None:
         return httpx.Response(200, json={"creatorStoreAssets": []})
 
     async def exercise() -> None:
-        server = create_server("test-key", transport=httpx.MockTransport(respond))
+        server = create_server("test-key", owner_id="42", owner_type="user", transport=httpx.MockTransport(respond))
         async with Client(server) as client:
             await client.call_tool(
                 "search_assets",
@@ -247,3 +249,35 @@ def test_search_maps_pagination_and_paid_filter() -> None:
             "pageToken": "next",
         }
     ]
+
+
+@pytest.mark.parametrize(
+    "owner_id,owner_type,error",
+    [
+        ("", "user", "ROBLOX_OWNER_ID"),
+        ("0", "user", "ROBLOX_OWNER_ID"),
+        ("abc", "user", "ROBLOX_OWNER_ID"),
+        ("123", "", "ROBLOX_OWNER_TYPE"),
+        ("123", "other", "ROBLOX_OWNER_TYPE"),
+    ],
+)
+def test_invalid_owner_fails_before_stdio(tmp_path: Path, owner_id: str, owner_type: str, error: str) -> None:
+    environment = {
+        **os.environ,
+        "ROBLOX_API_KEY": "test-key",
+        "ROBLOX_OWNER_ID": owner_id,
+        "ROBLOX_OWNER_TYPE": owner_type,
+        "ROBLOX_VALIDATE_SEARCH_ACCESS": "false",
+    }
+    result = subprocess.run(
+        [sys.executable, "-m", "roblox_assets_mcp.app"],
+        env=environment,
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        timeout=10,
+        check=False,
+    )
+    assert result.returncode != 0
+    assert error in result.stderr
+    assert result.stdout == ""

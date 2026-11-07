@@ -16,7 +16,9 @@ PageSize = Annotated[int, Field(ge=1, le=100, description="Number of results per
 LiteralCreator = Literal["user", "group"]
 
 
-def create_server(api_key: str, *, transport: httpx.AsyncBaseTransport | None = None) -> FastMCP:
+def create_server(
+    api_key: str, *, owner_id: str, owner_type: LiteralCreator, transport: httpx.AsyncBaseTransport | None = None
+) -> FastMCP:
     """Create an asset-only Roblox MCP server with a required Open Cloud API key."""
     roblox = RobloxClient(api_key, transport)
     manager = AssetManager(api_key, transport)
@@ -88,8 +90,6 @@ def create_server(api_key: str, *, transport: httpx.AsyncBaseTransport | None = 
         asset_type: UploadType,
         display_name: Annotated[str, Field(min_length=1)],
         description: Annotated[str, Field(max_length=1000)],
-        creator_id: AssetId,
-        creator_type: LiteralCreator = "user",
         expected_price: Annotated[int, Field(ge=0)] = 0,
     ) -> dict[str, Any]:
         """Upload a local file as an owned asset. Poll get_asset_operation for the result.
@@ -103,7 +103,7 @@ def create_server(api_key: str, *, transport: httpx.AsyncBaseTransport | None = 
             "displayName": display_name,
             "description": description,
             "creationContext": {
-                "creator": {"userId" if creator_type == "user" else "groupId": str(creator_id)},
+                "creator": {"userId" if owner_type == "user" else "groupId": owner_id},
                 "expectedPrice": expected_price,
             },
         }
@@ -204,6 +204,12 @@ def main() -> None:
     api_key = os.environ.get("ROBLOX_API_KEY", "")
     if not api_key.strip():
         raise SystemExit("ROBLOX_API_KEY is required to start roblox-assets-mcp")
+    owner_id = os.environ.get("ROBLOX_OWNER_ID", "").strip()
+    owner_type = os.environ.get("ROBLOX_OWNER_TYPE", "").strip().lower()
+    if not owner_id.isascii() or not owner_id.isdecimal() or int(owner_id) <= 0:
+        raise SystemExit("ROBLOX_OWNER_ID must be a positive numeric ID")
+    if owner_type not in {"user", "group"}:
+        raise SystemExit("ROBLOX_OWNER_TYPE must be user or group")
     check_search = os.environ.get("ROBLOX_VALIDATE_SEARCH_ACCESS", "true").lower()
     if check_search not in {"true", "false"}:
         raise SystemExit("ROBLOX_VALIDATE_SEARCH_ACCESS must be true or false")
@@ -212,7 +218,7 @@ def main() -> None:
             asyncio.run(RobloxClient(api_key).validate_access())
         except ToolError as error:
             raise SystemExit(f"ROBLOX_API_KEY validation failed: {error}") from error
-    create_server(api_key).run(transport="stdio")
+    create_server(api_key, owner_id=owner_id, owner_type=owner_type).run(transport="stdio")
 
 
 if __name__ == "__main__":
